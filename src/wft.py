@@ -1,5 +1,17 @@
 from json import loads,dumps
 from random import choice
+from datetime import datetime
+
+
+# utilities
+def read_date():
+    date = 0
+    try:
+        date = str(datetime.fromisoformat(_)) if (_ := input("date (YYYY-MM-DD): ")) else _ # ignore else
+    except Exception as reason:
+        print("[ERROR] Couldn't verify date, set to default(%d). Reason: %s" % (date, reason))
+    finally:
+        return date
 
 
 # manage tasks files (json:w,r)
@@ -13,20 +25,34 @@ def writeJsonFile(file, text):
 
 
 # manage tasks (add, delete, edit)
-def addTask(file, title):   # Feature (#81AB01)
+def addTask(file, title, date):
     tasks = readJsonFile(file)
-    tasks[title] = 0
-    writeJsonFile(file, dumps(tasks))
+    try:
+        tasks[title] = date
+        writeJsonFile(file, dumps(tasks))
+        print("[#] Task added successfully.")
+    except Exception as reason:
+        print("[ERROR]: Couldn't add task. Reason: %s" % reason)
 
 def delTask(file, title):
     tasks = readJsonFile(file)
-    del tasks[title]
-    writeJsonFile(file, dumps(tasks))
+    try:
+        del tasks[title]
+        writeJsonFile(file, dumps(tasks))
+        print("[#] Task deleted successfully.")
+    except Exception as reason:
+        print("[ERROR]: Couldn't delete task. Reason: %s" % reason)
 
-def editTask(file, old_title, new_title): # Feature (#81AB01)
+def editTask(file, old_title, new_title, new_date):
     tasks = readJsonFile(file)
-    tasks[new_title] = tasks.pop(old_title)
-    writeJsonFile(file, dumps(tasks))
+    try:
+        tasks[new_title] = tasks.pop(old_title)
+        if new_date:
+            tasks[new_title] = new_date
+        writeJsonFile(file, dumps(tasks))
+        print("[#] Task edited successfully.")
+    except Exception as reason:
+        print("[ERROR]: Couldn't edit task. Reason: %s" % reason)
 
 def showTasks(file):
     tasks = readJsonFile(file)
@@ -37,7 +63,7 @@ def showTasks(file):
 def randomTask(file):
     tasks = readJsonFile(file)
     random = choice(list(tasks.keys()))
-    print("[Random] %s" % (random))
+    print("[Random] %s (%s)" % (random, tasks[random]))
 
 
 # user interface (TUI)
@@ -53,37 +79,42 @@ def displayTaskMng():
 
 def manageTasks(file):
     displayTaskMng()
-    option = int(input("> "))   # Bug (#172E2A)
-    
+    option = input("> ")
+
+    NUMBER_OF_CHOICES = 3
     match (option):
-        case 1:
+        case '1':
             title = input("task: ")
-            addTask(file, title)
-        case 2:
-            old_title, new_title = input("old_task,new_task: ").split(',')
-            editTask(file, old_title, new_title)
-        case 3:
+            date = read_date()
+            addTask(file, title, date)
+        case '2':
+            old_title = input("old Task: ")
+            new_title =  input("new Task: ")
+            new_date = read_date()
+            editTask(file, old_title, new_title, new_date)
+        case '3':
             title = input("task: ")
-            print("Are you sure you want to delete (%s) [0/1]: " % (title), end='')
-            if int(input("")):  # Bug (#172E2A)
+            print("Are you sure you want to delete (%s) ['enter' for no]: " % (title), end='')
+            if bool(input("")):
                 delTask(file, title)
         case _:
-            print("[ERROR]: Invalid Choice (1-3)")
+            print("[ERROR]: Invalid Choice (1-%d)" % NUMBER_OF_CHOICES)
 
 
 # manages user I/O
 def run(tasks_file):
     print("# What For Today?")
     displayMenu()
-    option = int(input("> "))   # Bug (#172E2A)
-    
+    option = input("> ")
+
+    NUMBER_OF_CHOICES = 3
     match (option):
-        case 1:
+        case '1':
             showTasks(tasks_file)
-        case 2:
+        case '2':
             randomTask(tasks_file)
-        case 3:
+        case '3':
             manageTasks(tasks_file)
         case _:
-            print("[ERROR]: Invalid Choice (1-3)")
+            print("[ERROR]: Invalid Choice (1-%d)" % NUMBER_OF_CHOICES)
 
