@@ -1,6 +1,6 @@
 [Features]
-[ ] Tasks by date (#928461)
-[ ] Ask user for preffered task file (#81AB01)
+[X] Tasks by date (#928461)
+[X] Ask user for preffered task file (#81AB01)
 
 [Bugs]
-[ ] Manage ValueError in reading user input (#172E2A)
+[X] Manage ValueError in reading user input (#172E2A)
